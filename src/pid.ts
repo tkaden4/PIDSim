@@ -17,11 +17,11 @@ export interface PID {
   derivative: Derivative;
 }
 
-export interface PIDController {
+export interface Controller {
   (error: number, delta: number): number;
 }
 
-export function pidStep(pid: PID): PIDController {
+export function pidController(pid: PID): Controller {
   let integral = 0;
   let previousError: number | undefined = undefined;
   return (error, delta) => {
@@ -51,7 +51,7 @@ export function cruiseControl(startingSpeed: number, jerk: number): Process {
 
 export function runProcessWithPIDControl(
   process: Process,
-  pid: PIDController,
+  pid: Controller,
   initialOutput: number,
   setPoint: number,
   steps: number,

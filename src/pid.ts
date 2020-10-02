@@ -23,9 +23,9 @@ export interface PIDController {
 
 export function pidStep(pid: PID): PIDController {
   let integral = 0;
-  let previousError = 0;
+  let previousError: number | undefined = undefined;
   return (error, delta) => {
-    previousError = error;
+    previousError = previousError ?? error;
     integral += pid.integral.coefficient * error * delta;
     const proportion = pid.proportion.proportionality * error + pid.proportion.bias;
     const derivative = pid.derivative.coefficient * ((error - previousError) / delta);
@@ -51,7 +51,7 @@ export function cruiseControl(startingSpeed: number, jerk: number): Process {
 
 export function runProcessWithPIDControl(
   process: Process,
-  pid: PID,
+  pid: PIDController,
   initialOutput: number,
   setPoint: number,
   steps: number,
@@ -59,10 +59,9 @@ export function runProcessWithPIDControl(
   onStep: (pv: number) => void
 ) {
   let pv = process(initialOutput, 0);
-  let step = pidStep(pid);
   let output = initialOutput;
   for (let i = 0; i < steps; ++i) {
-    output = step(setPoint - pv, delta);
+    output = pid(setPoint - pv, delta);
     pv = process(output, delta);
     onStep(pv);
   }
